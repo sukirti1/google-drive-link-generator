@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive Image Link Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .preview img, .preview iframe {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+        .code-block {
+            background-color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .copy-btn {
+            background-color: #2196F3;
+            font-size: 0.8em;
+            padding: 5px 10px;
+        }
+        .method-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .method-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Google Drive Image Link Converter</h1>
+    
+    <div class="container">
+        <h2>Step 1: Paste your Google Drive sharing link</h2>
+        <input type="text" id="driveLink" placeholder="Paste your Google Drive sharing link here">
+        <button onclick="convertLink()">Generate All Formats</button>
+        
+        <div id="results" style="display: none;">
+            <h2>Step 2: Choose Your Embedding Method</h2>
+
+            <div class="method-container">
+                <div class="method-title">Method 1: Thumbnail Link</div>
+                <textarea id="thumbnailLink" rows="2" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard('thumbnailLink')">Copy Link</button>
+                <div class="code-block">
+                    <div class="method-title">HTML Code:</div>
+                    <textarea id="thumbnailHtml" rows="2" readonly></textarea>
+                    <button class="copy-btn" onclick="copyToClipboard('thumbnailHtml')">Copy HTML</button>
+                </div>
+            </div>
+
+            <div class="method-container">
+                <div class="method-title">Method 2: Googleusercontent Link</div>
+                <textarea id="usercontentLink" rows="2" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard('usercontentLink')">Copy Link</button>
+                <div class="code-block">
+                    <div class="method-title">HTML Code:</div>
+                    <textarea id="usercontentHtml" rows="2" readonly></textarea>
+                    <button class="copy-btn" onclick="copyToClipboard('usercontentHtml')">Copy HTML</button>
+                </div>
+            </div>
+
+            <div class="method-container">
+                <div class="method-title">Method 3: iframe Embed</div>
+                <div class="code-block">
+                    <textarea id="iframeHtml" rows="3" readonly></textarea>
+                    <button class="copy-btn" onclick="copyToClipboard('iframeHtml')">Copy iframe Code</button>
+                </div>
+            </div>
+
+            <div class="preview">
+                <h2>Preview</h2>
+                <div id="previewContainer"></div>
+                <button onclick="testAllFormats()">Test All Formats</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            document.execCommand('copy');
+            alert('Copied to clipboard!');
+        }
+
+        function convertLink() {
+            const driveLink = document.getElementById('driveLink').value;
+            const fileIdMatch = driveLink.match(/\/d\/(.+?)\/|id=(.+?)(&|$)/);
+            
+            if (fileIdMatch) {
+                const fileId = fileIdMatch[1] || fileIdMatch[2];
+
+                // Method 1: Thumbnail Link
+                const thumbnailLink = `https://drive.google.com/thumbnail?id=${fileId}`;
+                document.getElementById('thumbnailLink').value = thumbnailLink;
+                document.getElementById('thumbnailHtml').value = `<img src="${thumbnailLink}" alt="Google Drive Image">`;
+
+                // Method 2: Usercontent Link
+                const usercontentLink = `https://lh3.googleusercontent.com/d/${fileId}`;
+                document.getElementById('usercontentLink').value = usercontentLink;
+                document.getElementById('usercontentHtml').value = `<img src="${usercontentLink}" alt="Google Drive Image">`;
+
+                // Method 3: iframe
+                const iframeHtml = `<iframe src="https://drive.google.com/file/d/${fileId}/preview" width="640" height="480" allow="autoplay"></iframe>`;
+                document.getElementById('iframeHtml').value = iframeHtml;
+
+                // Show results
+                document.getElementById('results').style.display = 'block';
+            } else {
+                alert('Invalid Google Drive link. Please make sure you\'re using a sharing link from Google Drive.');
+            }
+        }
+
+        function testAllFormats() {
+            const previewContainer = document.getElementById('previewContainer');
+            previewContainer.innerHTML = ''; // Clear previous previews
+
+            const formats = ['thumbnailHtml', 'usercontentHtml', 'iframeHtml'];
+            formats.forEach((format, index) => {
+                const methodDiv = document.createElement('div');
+                methodDiv.innerHTML = `<h3>Method ${index + 1}</h3>`;
+                methodDiv.innerHTML += document.getElementById(format).value;
+                previewContainer.appendChild(methodDiv);
+            });
+        }
+    </script>
+
+    <div class="container">
+        <h3>Important Notes:</h3>
+        <ul>
+            <li>Make sure the Google Drive file sharing settings are set to "Anyone with the link can view"</li>
+            <li>Different methods may work better in different situations</li>
+            <li>For production websites, consider using dedicated image hosting services like:
+                <ul>
+                    <li>Imgur</li>
+                    <li>Cloudinary</li>
+                    <li>ImageKit</li>
+                    <li>AWS S3</li>
+                </ul>
+            </li>
+            <li>The iframe method is generally the most reliable but may not suit all use cases</li>
+        </ul>
+    </div>
+</body>
+</html>
